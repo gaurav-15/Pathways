@@ -7,16 +7,18 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.use(express.static(__dirname + '/Pages'));
+
 app.get("/test",function(req,res){
     console.log("get req");
 });
 
 app.get("/", function (req, res) {
-    res.redirect("/Pages/index.html");
+    res.redirect("/index.html");
 });
 
 app.post("/", function (req, res) {
-    res.redirect("/Pages/index.html");
+    res.redirect("/index.html");
 });
 
 app.post("/test",function (req, res) {
