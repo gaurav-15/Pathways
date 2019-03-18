@@ -11,11 +11,19 @@ app.get("/test",function(req,res){
     console.log("get req");
 });
 
+app.get("/", function (req, res) {
+    res.redirect("/pages/index.html");
+});
+
+app.post("/", function (req, res) {
+    res.redirect("/pages/index.html");
+});
+
 app.post("/test",function (req, res) {
     console.log("post req");
     console.log("params: "+req.body.doc_id);
 });
 
 app.listen(8080, function () {
-   console.log("listening on http://localhost:8080");
+   console.log("listening on port: 8080");
 });
