@@ -12,11 +12,11 @@ app.get("/test",function(req,res){
 });
 
 app.get("/", function (req, res) {
-    res.redirect("/pages/index.html");
+    res.redirect("/Pages/index.html");
 });
 
 app.post("/", function (req, res) {
-    res.redirect("/pages/index.html");
+    res.redirect("/Pages/index.html");
 });
 
 app.post("/test",function (req, res) {
