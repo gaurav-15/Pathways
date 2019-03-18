@@ -15,14 +15,7 @@ app.post("/", function (req, res) {
     res.redirect("https://iiitd-pathways.firebaseapp.com/");
 });
 
-app.get("/test",function(req,res){
-    console.log("get req");
-});
 
-app.post("/test",function (req, res) {
-    console.log("post req");
-    console.log("params: "+req.body.doc_id);
-});
 
 app.listen(8080, function () {
    console.log("listening on port: 8080");
