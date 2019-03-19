@@ -15,6 +15,7 @@ app.get('/', function (req, res) {
             console.error(err);
         }
         console.log("connected to db");
+        client.close();
     });
     res.end();
 });
