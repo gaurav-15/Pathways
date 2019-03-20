@@ -19,7 +19,18 @@ app.post('/', function (req, res) {
 });
 
 
-app.post('/getCourses', function (req, res) {
+app.get('/getCourses', function (req, res) {
+    getCourses(req, res);
+});
+
+app.listen(8080, function () {
+    console.log("Listening on port: 8080");
+});
+
+
+
+
+function getCourses(req, res) {
     var connect=require('./connect');
     connect.connectDB(function (err, client) {
         if (err) {
@@ -27,20 +38,18 @@ app.post('/getCourses', function (req, res) {
             throw err;
         }
         var courses=client.db('Pathways_db').collection('Courses').find({});
+        var response="";
         courses.toArray(function (mongoError, objects) {
             if (err) {
                 console.error(err);
                 throw err;
             }
-            //console.log(objects);
-            res.write(JSON.stringify(objects));
+            response=response+JSON.stringify(objects);
+            console.log(response);
+            console.log("Disconnecting from DB");
+            res.send(response);
             client.close();
             res.end();
-            console.log("Connection closed");
         });
     });
-});
-
-app.listen(8080, function () {
-    console.log("Listening on port: 8080");
-});
+}
