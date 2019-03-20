@@ -19,7 +19,7 @@ app.post('/', function (req, res) {
 });
 
 
-app.post('/getCourses', function (req, res) {
+app.get('/getCourses', function (req, res) {
     getCourses(req, res);
 });
 
