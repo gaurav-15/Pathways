@@ -48,9 +48,8 @@ function getCourses(req, res) {
             console.log(response);
             console.log("Disconnecting from DB");
             res.writeHead(200, {'Content-Type': 'text/event-stream'});
-            res.send(response);
             client.close();
-            res.end();
+            res.end(response);
         });
     });
 }
