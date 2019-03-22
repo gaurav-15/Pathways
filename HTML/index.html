@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        function getCourses() {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", "/getCourses", false ); // false for synchronous request
+            xmlHttp.send( null );
+            console.log(xmlHttp.responseText);
+            document.getElementById("response").innerHTML = xmlHttp.responseText;
+        }
+    </script>
+</head>
+<body>
+<button id="demo" onclick="getCourses()">Press to get response</button>
+<div id="response">no response yet</div>
+</body>
+</html>
