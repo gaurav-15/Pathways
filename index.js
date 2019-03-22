@@ -7,7 +7,7 @@ app.use(bodyParser.urlencoded({
     extended:true
 }));
 
-app.listen(8080, function () {
+app.listen(process.env.PORT || 8080, function () {
     console.log("server started listening at port: 8080");
 });
 
