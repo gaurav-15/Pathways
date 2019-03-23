@@ -19,13 +19,71 @@ app.post('/', function (req, res) {
     res.end();
 });
 
-app.get('/courses', function (req, res) {
+app.post('/courses', function (req, res) {
     getCourses(function (response) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         res.end(response);
     });
 });
+
+
+app.post('/login', function (req, res) {
+    var name_i=req.body.name;
+    var email_i=req.body.email;
+    console.log("name: "+name_i);
+    console.log("email: "+email_i);
+    login(email_i, name_i, function (response) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.end(response);
+    });
+});
+
+
+function login(email_i, name_i, callback) {
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        checkUser(email_i, client, function (user) {
+            if (!user) {
+                createUser(email_i, name_i, client, function (result) {
+                    callback(JSON.stringify(result));
+                    /*if (!result) {
+
+                    }else {
+
+                    }*/
+                });
+            }else {
+                callback(JSON.stringify(user));
+            }
+        });
+    });
+}
+
+function checkUser(email_i, client, callback) {
+    client.db('Pathways_db').collection('Users').findOne({email:email_i}, function (err, result) {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        callback(result);
+    });
+}
+
+function  createUser(email_i, name_i, client, callback) {
+    client.db('Pathways_db').collection('Users').insertOne({email: email_i, name: name_i}, function (err, result) {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        callback(JSON.stringify(result));
+    })
+}
+
 
 
 function getCourses(callback) {
