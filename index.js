@@ -50,12 +50,12 @@ function login(email_i, name_i, callback) {
         checkUser(email_i, client, function (user) {
             if (!user) {
                 createUser(email_i, name_i, client, function (result) {
-                    callback(JSON.stringify(result));
-                    /*if (!result) {
-
+                    if (!result) {
+                        result="0";
                     }else {
-
-                    }*/
+                        result="1";
+                    }
+                    callback(result);
                 });
             }else {
                 callback(JSON.stringify(user));
