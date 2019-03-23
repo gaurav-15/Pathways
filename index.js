@@ -44,37 +44,53 @@ app.post('/login', function (req, res) {
 
 app.post('/addCourse', function (req, res) {
     var name_i=req.body.title;
+    var code_i=req.body.code.toUpperCase();
     var semester_i=req.body.semester;
     var credits_i=req.body.credits;
     var prerequisites_i=req.body.prerequisites;
     var antirequisites_i=req.body.antirequisites;
-    addCourse(name_i,semester_i,credits_i,prerequisites_i,antirequisites_i, function (response) {
-        var result="";
-        if (!response) {
-            result="0";
-        }else {
-            result="1";
-        }
+    addCourse(name_i,code_i,semester_i,credits_i,prerequisites_i,antirequisites_i, function (response) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.end(result);
+        res.end(response);
     });
 });
 
 
-function addCourse(name_i, semester_i, credits_i, prerequisites_i, antirequisites_i, callback) {
+function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i, callback) {
     connectDB(function (err, client) {
         if (err) {
             console.error(err);
             throw err;
         }
-        client.db('Pathways_db').collection('Courses').insertOne({name:name_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i)}, function (err, result) {
-            if (err) {
-                console.error(err);
-                throw err;
+        checkCourse(code_i, client, function (course) {
+            if (!course) {
+                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i)}, function (err, result) {
+                    if (err) {
+                        console.error(err);
+                        throw err;
+                    }
+                    if (!result) {
+                        callback("0");
+                    } else {
+                        callback("1");
+                    }
+                });
+            } else {
+                callback("2");
             }
-            callback(result);
         });
+    });
+}
+
+
+function checkCourse(code_i, client, callback) {
+    client.db('Pathways_db').collection('Courses').findOne({code:code_i}, function (err, result) {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        callback(result);
     });
 }
 
