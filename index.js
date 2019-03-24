@@ -43,10 +43,10 @@ app.post('/login', function (req, res) {
 
 
 app.post('/addCourse', function (req, res) {
-    var name_i=req.body.title;
-    var code_i=req.body.code.toUpperCase();
-    var semester_i=req.body.semester;
-    var credits_i=req.body.credits;
+    var name_i=req.body.title.trim();
+    var code_i=req.body.code.toUpperCase().trim();
+    var semester_i=req.body.semester.trim();
+    var credits_i=req.body.credits.trim();
     var prerequisites_i=req.body.prerequisites;
     var antirequisites_i=req.body.antirequisites;
     addCourse(name_i,code_i,semester_i,credits_i,prerequisites_i,antirequisites_i, function (response) {
@@ -65,7 +65,7 @@ function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antir
         }
         checkCourse(code_i, client, function (course) {
             if (!course) {
-                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i)}, function (err, result) {
+                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[]}, function (err, result) {
                     if (err) {
                         console.error(err);
                         throw err;
@@ -73,6 +73,15 @@ function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antir
                     if (!result) {
                         callback("0");
                     } else {
+                        var prereq=JSON.parse(prerequisites_i);
+                        for (var i=0;i<prereq.length;i++) {
+                            client.db('Pathways_db').collection('Courses').updateOne({code: new RegExp('^'+prereq[i]+'$', "i")}, {$push: {options:code_i}}, function (err, upd) {
+                                if (err) {
+                                    console.error(err);
+                                    throw err;
+                                }
+                            });
+                        }
                         callback("1");
                     }
                 });
@@ -85,7 +94,7 @@ function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antir
 
 
 function checkCourse(code_i, client, callback) {
-    client.db('Pathways_db').collection('Courses').findOne({code:code_i}, function (err, result) {
+    client.db('Pathways_db').collection('Courses').findOne({code: new RegExp('^'+code_i+'$', "i")}, function (err, result) {
         if (err) {
             console.error(err);
             throw err;
