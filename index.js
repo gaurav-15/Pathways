@@ -88,7 +88,6 @@ function getDependencies(response, callback) {
     for (var i=0;i<courses.size();i++) {
         var d=true;
         while (d) {
-
         }
     }
 }
@@ -103,7 +102,7 @@ function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antir
         }
         checkCourse(code_i, client, function (course) {
             if (!course) {
-                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[]}, function (err, result) {
+                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[], tags: ""}, function (err, result) {
                     if (err) {
                         console.error(err);
                         throw err;
@@ -180,7 +179,7 @@ function checkUser(email_i, client, callback) {
 }
 
 function  createUser(email_i, name_i, client, callback) {
-    client.db('Pathways_db').collection('Users').insertOne({email: email_i, name: name_i}, function (err, result) {
+    client.db('Pathways_db').collection('Users').insertOne({email: email_i, name: name_i, sem: 0, courses: [], sg_status: 0, cw_status:0, interests: []}, function (err, result) {
         if (err) {
             console.error(err);
             throw err;
