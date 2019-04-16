@@ -57,6 +57,44 @@ app.post('/addCourse', function (req, res) {
 });
 
 
+app.post("/searchCourses", function (req, res) {
+    var name=req.body.search.toLowerCase().trim();
+    searchCourses(name,function (response) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.end(response);
+    });
+});
+
+
+function searchCourses(searchKey, callback) {
+    connectDB(function (err, client)  {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        client.db("Pathways_db").collection('Courses').find({"name":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
+            var response=JSON.stringify(objects);
+            console.log(response);
+            client.close();
+            callback(response);
+        });
+    })
+}
+
+
+function getDependencies(response, callback) {
+    var courses=JSON.parse(response);
+    for (var i=0;i<courses.size();i++) {
+        var d=true;
+        while (d) {
+
+        }
+    }
+}
+
+
+
 function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i, callback) {
     connectDB(function (err, client) {
         if (err) {
@@ -104,6 +142,10 @@ function checkCourse(code_i, client, callback) {
 }
 
 
+
+
+
+
 function login(email_i, name_i, callback) {
     connectDB(function (err, client) {
         if (err) {
@@ -144,7 +186,7 @@ function  createUser(email_i, name_i, client, callback) {
             throw err;
         }
         callback(JSON.stringify(result));
-    })
+    });
 }
 
 
