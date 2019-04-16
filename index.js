@@ -49,7 +49,8 @@ app.post('/addCourse', function (req, res) {
     var credits_i=req.body.credits.trim();
     var prerequisites_i=req.body.prerequisites;
     var antirequisites_i=req.body.antirequisites;
-    addCourse(name_i,code_i,semester_i,credits_i,prerequisites_i,antirequisites_i, function (response) {
+    var tags_i=req.body.tags;
+    addCourse(name_i,code_i,semester_i,credits_i,prerequisites_i,antirequisites_i, tags_i,function (response) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         res.end(response);
@@ -94,7 +95,7 @@ function getDependencies(response, callback) {
 
 
 
-function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i, callback) {
+function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i,tags_i, callback) {
     connectDB(function (err, client) {
         if (err) {
             console.error(err);
@@ -102,7 +103,7 @@ function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antir
         }
         checkCourse(code_i, client, function (course) {
             if (!course) {
-                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[], tags: ""}, function (err, result) {
+                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[], tags: tags_i}, function (err, result) {
                     if (err) {
                         console.error(err);
                         throw err;
