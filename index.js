@@ -74,7 +74,7 @@ function searchCourses(searchKey, callback) {
             console.error(err);
             throw err;
         }
-        client.db("Pathways_db").collection('Courses').find({"name":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
+        client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}}]}).toArray(function (mongoError, objects) {
             var response=JSON.stringify(objects);
             console.log(response);
             client.close();
