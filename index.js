@@ -20,10 +20,19 @@ app.post('/', function (req, res) {
 });
 
 app.post('/courses', function (req, res) {
-    getCourses(function (response) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.end(response);
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        getCourses(client,function (response) {
+            client.close();
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end(response);
+        });
     });
 });
 
@@ -31,12 +40,19 @@ app.post('/courses', function (req, res) {
 app.post('/login', function (req, res) {
     let name_i=req.body.name;
     let email_i=req.body.email;
-    console.log("name: "+name_i);
-    console.log("email: "+email_i);
-    login(email_i, name_i, function (response) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.end(response);
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        login(client, email_i, name_i, function (response) {
+            client.close();
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end(response);
+        });
     });
 });
 
@@ -50,28 +66,16 @@ app.post('/addCourse', function (req, res) {
     let prerequisites_i=req.body.prerequisites;
     let antirequisites_i=req.body.antirequisites;
     let tags_i=req.body.tags;
-    addCourse(name_i,code_i,semester_i,credits_i,prerequisites_i,antirequisites_i, tags_i,function (response) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.end(response);
-    });
-});
 
-
-app.post("/searchCourses", function (req, res) {
-    let name=req.body.search.toLowerCase().trim();
-    searchCourses(name,function (response) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.end(response);
-    });
-});
-
-app.post("/searchCoursesbyid", function (req, res) {
-    let name=req.body.code.toLowerCase().trim();
-    //console.log(name);
-    searchCoursesbyid(name,function (response) {
-        getDependencies(response,function (response) {
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        addCourse(client, name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i, tags_i, function (response) {
+            client.close();
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.end(response);
@@ -80,8 +84,47 @@ app.post("/searchCoursesbyid", function (req, res) {
 });
 
 
+app.post("/searchCourses", function (req, res) {
+    let name=req.body.search.toLowerCase().trim();
+    connectDB(function (err, client)  {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        searchCourses(client, name,function (response) {
+            client.close();
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end(response);
+        });
+    });
+});
 
-async function getDependencies(json_str,callback) {
+app.post("/searchCoursesbyid", function (req, res) {
+    let name=req.body.code.toLowerCase().trim();
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        searchCoursesbyid(client, name, function (response) {
+            getDependencies(client, response, function (response) {
+                client.close();
+                res.header("Access-Control-Allow-Origin", "*");
+                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                res.end(response);
+            });
+        });
+    });
+});
+
+
+
+async function getDependencies(client, json_str,callback) {
     const async = require('async');
     let json = JSON.parse(json_str);
     let queue = [];
@@ -97,7 +140,7 @@ async function getDependencies(json_str,callback) {
         result[cid]=[];
         visited.push(cid);
         await new Promise(function (callback) {
-            searchCoursesbyid(cid,function (response) {
+            searchCoursesbyid(client, cid,function (response) {
                 json=JSON.parse(response);
                 for (let i=json[0].prerequisites.length-1;i>=0;i--) {
                     if (visited.indexOf(json[0].prerequisites[i])===-1) {
@@ -112,71 +155,50 @@ async function getDependencies(json_str,callback) {
     callback(JSON.stringify(result));
 }
 
-function searchCourses(searchKey, callback) {
-    connectDB(function (err, client)  {
-        if (err) {
-            console.error(err);
-            throw err;
-        }
-        client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}}]}).toArray(function (mongoError, objects) {
-            let response=JSON.stringify(objects);
-            //console.log(response);
-            client.close();
-            callback(response);
-        });
-    })
+function searchCourses(client, searchKey, callback) {
+    client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}}]}).toArray(function (mongoError, objects) {
+        let response=JSON.stringify(objects);
+        callback(response);
+    });
 }
 
 
 
-function searchCoursesbyid(searchKey, callback) {
-    connectDB(function (err, client)  {
-        if (err) {
-            console.error(err);
-            throw err;
-        }
-        client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
-            let response=JSON.stringify(objects);
-            client.close();
-            callback(response);
-        });
-    })
+function searchCoursesbyid(client, searchKey, callback) {
+    client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
+        let response=JSON.stringify(objects);
+        callback(response);
+    });
 }
 
 
 
-function addCourse(name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i,tags_i, callback) {
-    connectDB(function (err, client) {
-        if (err) {
-            console.error(err);
-            throw err;
+function addCourse(client, name_i, code_i, semester_i, credits_i, prerequisites_i, antirequisites_i,tags_i, callback) {
+    checkCourse(code_i, client, function (course) {
+        if (!course) {
+            client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[], tags: tags_i}, function (err, result) {
+                if (err) {
+                    console.error(err);
+                    throw err;
+                }
+                if (!result) {
+                    callback("0");
+                } else {
+                    let prereq=JSON.parse(prerequisites_i);
+                    for (let i=0;i<prereq.length;i++) {
+                        client.db('Pathways_db').collection('Courses').updateOne({code: new RegExp('^'+prereq[i]+'$', "i")}, {$push: {options:code_i}}, function (err, upd) {
+                            if (err) {
+                                console.error(err);
+                                throw err;
+                            }
+                        });
+                    }
+                    callback("1");
+                }
+            });
+        } else {
+            callback("2");
         }
-        checkCourse(code_i, client, function (course) {
-            if (!course) {
-                client.db('Pathways_db').collection('Courses').insertOne({name:name_i,code:code_i,semester:semester_i, credits:credits_i, prerequisites:JSON.parse(prerequisites_i),antirequisites:JSON.parse(antirequisites_i), options:[], tags: tags_i}, function (err, result) {
-                    if (err) {
-                        console.error(err);
-                        throw err;
-                    }
-                    if (!result) {
-                        callback("0");
-                    } else {
-                        let prereq=JSON.parse(prerequisites_i);
-                        for (let i=0;i<prereq.length;i++) {
-                            client.db('Pathways_db').collection('Courses').updateOne({code: new RegExp('^'+prereq[i]+'$', "i")}, {$push: {options:code_i}}, function (err, upd) {
-                                if (err) {
-                                    console.error(err);
-                                    throw err;
-                                }
-                            });
-                        }
-                        callback("1");
-                    }
-                });
-            } else {
-                callback("2");
-            }
-        });
     });
 }
 
@@ -196,26 +218,20 @@ function checkCourse(code_i, client, callback) {
 
 
 
-function login(email_i, name_i, callback) {
-    connectDB(function (err, client) {
-        if (err) {
-            console.error(err);
-            throw err;
+function login(client, email_i, name_i, callback) {
+    checkUser(email_i, client, function (user) {
+        if (!user) {
+            createUser(email_i, name_i, client, function (result) {
+                if (!result) {
+                    result="0";
+                }else {
+                    result="1";
+                }
+                callback(result);
+            });
+        }else {
+            callback(JSON.stringify(user));
         }
-        checkUser(email_i, client, function (user) {
-            if (!user) {
-                createUser(email_i, name_i, client, function (result) {
-                    if (!result) {
-                        result="0";
-                    }else {
-                        result="1";
-                    }
-                    callback(result);
-                });
-            }else {
-                callback(JSON.stringify(user));
-            }
-        });
     });
 }
 
@@ -241,21 +257,13 @@ function  createUser(email_i, name_i, client, callback) {
 
 
 
-function getCourses(callback) {
-    connectDB(function (err, client) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        let courses=client.db('Pathways_db').collection('Courses').find({});
-        let response="";
-        courses.toArray(function (mongoError, objects) {
-            response=JSON.stringify(objects);
-            console.log(response);
-            client.close();
-            callback(response);
-        });
-    })
+function getCourses(client, callback) {
+    let courses=client.db('Pathways_db').collection('Courses').find({});
+    let response="";
+    courses.toArray(function (mongoError, objects) {
+        response=JSON.stringify(objects);
+        callback(response);
+    });
 }
 
 
