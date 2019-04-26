@@ -175,11 +175,11 @@ app.post("/getoptionsbyid", function (req, res) {
 app.post("/updateuserdetails", function (req, res) {
     let email_i=req.body.email.trim();
     let branch_i=req.body.branch.trim();
-    let sem_i=req.body.sem.trim();
-    let courses_i=req.body.courses.trim();
-    let sg_status_i=req.body.sg_status.trim();
-    let cw_status_i=req.body.cw_status.trim();
-    let interest_i=req.body.interests.trim();
+    let sem_i=req.body.sem;
+    let courses_i=JSON.parse(req.body.courses.trim());
+    let sg_status_i=req.body.sg_status;
+    let cw_status_i=req.body.cw_status;
+    let interest_i=JSON.parse(req.body.interests.trim());
     connectDB(function (err, client) {
         if (err) {
             console.error(err);
@@ -204,9 +204,8 @@ function updateUserdata(client, email_i, branch_i, sem_i,courses_i, sg_status_i,
         if (err){
             console.log(err);
             throw err;
-        }else {
-            callback("1");
         }
+        callback("1");
     })
 }
 
