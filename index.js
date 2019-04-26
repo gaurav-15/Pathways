@@ -103,7 +103,7 @@ app.post("/searchCourses", function (req, res) {
     });
 });
 
-app.post("/searchCoursesbyid", function (req, res) {
+app.post("/getprereqbyid", function (req, res) {
     let name=req.body.code.toLowerCase().trim();
     connectDB(function (err, client) {
         if (err) {
@@ -112,8 +112,8 @@ app.post("/searchCoursesbyid", function (req, res) {
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.end("Could not connect to database!");
         }
-        searchCoursesbyid(client, name, function (response) {
-            getDependencies(client, response, function (response) {
+        getPrereqbyid(client, name, function (response) {
+            getPrereqDependecies(client, response, function (response) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
                 res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -125,7 +125,29 @@ app.post("/searchCoursesbyid", function (req, res) {
 
 
 
-async function getDependencies(client, json_str,callback) {
+
+app.post("/getantireqbyid", function (req, res) {
+    let name=req.body.code.toLowerCase().trim();
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        getAntireqbyid(client, name, function (response) {
+            getAntireqDependencies(client, response, function (response) {
+                client.close();
+                res.header("Access-Control-Allow-Origin", "*");
+                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                res.end(response);
+            });
+        });
+    });
+});
+
+
+async function getPrereqDependecies(client, json_str,callback) {
     const async = require('async');
     let json = JSON.parse(json_str);
     let queue = [];
@@ -141,7 +163,7 @@ async function getDependencies(client, json_str,callback) {
         result[cid]=[];
         visited.push(cid);
         await new Promise(function (callback) {
-            searchCoursesbyid(client, cid,function (response) {
+            getPrereqbyid(client, cid,function (response) {
                 json=JSON.parse(response);
                 for (let i=json[0].prerequisites.length-1;i>=0;i--) {
                     if (visited.indexOf(json[0].prerequisites[i])===-1) {
@@ -157,7 +179,7 @@ async function getDependencies(client, json_str,callback) {
 }
 
 
-async function getAntiDependencies(client, json_str,callback) {
+async function getAntireqDependencies(client, json_str,callback) {
     const async = require('async');
     let json = JSON.parse(json_str);
     let queue = [];
@@ -173,11 +195,11 @@ async function getAntiDependencies(client, json_str,callback) {
         result[cid]=[];
         visited.push(cid);
         await new Promise(function (callback) {
-            searchCoursesbyid(client, cid,function (response) {
+            getPrereqbyid(client, cid,function (response) {
                 json=JSON.parse(response);
-                for (let i=json[0].antirequisites.length-1;i>=0;i--) {
-                    if (visited.indexOf(json[0].antirequisites[i])===-1) {
-                        queue.push(json[0].antirequisites[i]);
+                for (let i=json[0].options.length-1;i>=0;i--) {
+                    if (visited.indexOf(json[0].options[i])===-1) {
+                        queue.push(json[0].options[i]);
                     }
                 }
                 result[cid].push(json[0]);
@@ -199,7 +221,14 @@ function searchCourses(client, searchKey, callback) {
 
 
 
-function searchCoursesbyid(client, searchKey, callback) {
+function getPrereqbyid(client, searchKey, callback) {
+    client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
+        let response=JSON.stringify(objects);
+        callback(response);
+    });
+}
+
+function getAntireqbyid(client, searchKey, callback) {
     client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
         let response=JSON.stringify(objects);
         callback(response);
