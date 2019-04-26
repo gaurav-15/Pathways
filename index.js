@@ -227,7 +227,7 @@ function login(client, email_i, name_i,url_i, callback) {
                     callback("0");
                 }else {
                     checkUser(email_i, client, function (response) {
-                        callback(response);
+                        callback(JSON.stringify(response));
                     });
                 }
             });
