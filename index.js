@@ -179,7 +179,7 @@ app.post("/updateuserdetails", function (req, res) {
     let courses_i=req.body.courses.trim();
     let sg_status_i=req.body.sg_status.trim();
     let cw_status_i=req.body.cw_status.trim();
-    let interest_i=req.body.courses.trim();
+    let interest_i=req.body.interests.trim();
     connectDB(function (err, client) {
         if (err) {
             console.error(err);
