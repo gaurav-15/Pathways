@@ -156,8 +156,42 @@ async function getDependencies(client, json_str,callback) {
     callback(JSON.stringify(result));
 }
 
+
+async function getAntiDependencies(client, json_str,callback) {
+    const async = require('async');
+    let json = JSON.parse(json_str);
+    let queue = [];
+    let visited = [];
+    let result={};
+    result[json[0].code]=[];
+    for (let i=json[0].antirequisites.length-1;i>=0;i--) {
+        queue.push(json[0].antirequisites[i]);
+    }
+    result[json[0].code].push(json[0]);
+    while (queue.length!==0){
+        let cid = queue.pop();
+        result[cid]=[];
+        visited.push(cid);
+        await new Promise(function (callback) {
+            searchCoursesbyid(client, cid,function (response) {
+                json=JSON.parse(response);
+                for (let i=json[0].antirequisites.length-1;i>=0;i--) {
+                    if (visited.indexOf(json[0].antirequisites[i])===-1) {
+                        queue.push(json[0].antirequisites[i]);
+                    }
+                }
+                result[cid].push(json[0]);
+                callback();
+            });
+        });
+    }
+    callback(JSON.stringify(result));
+}
+
+
+
 function searchCourses(client, searchKey, callback) {
-    client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}}]}).toArray(function (mongoError, objects) {
+    client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}},{"code":searchKey}]}).toArray(function (mongoError, objects) {
         let response=JSON.stringify(objects);
         callback(response);
     });
