@@ -191,7 +191,7 @@ async function getAntiDependencies(client, json_str,callback) {
 
 
 function searchCourses(client, searchKey, callback) {
-    client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}},{"code":searchKey}]}).toArray(function (mongoError, objects) {
+    client.db("Pathways_db").collection('Courses').find({$or:[{"tags":{$regex: new RegExp(searchKey, "i")}},{"name":{$regex: new RegExp(searchKey, "i")}},{"code":searchKey.toUpperCase()}]}).toArray(function (mongoError, objects) {
         let response=JSON.stringify(objects);
         callback(response);
     });
