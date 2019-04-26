@@ -224,13 +224,12 @@ function login(client, email_i, name_i,url_i, callback) {
         if (!user) {
             createUser(email_i, name_i, url_i, client, function (result) {
                 if (!result) {
-                    result="0";
+                    callback("0");
                 }else {
                     checkUser(email_i, client, function (response) {
-                        result=response;
+                        callback(response);
                     });
                 }
-                callback(result);
             });
         }else {
             callback(JSON.stringify(user));
