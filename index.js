@@ -226,7 +226,9 @@ function login(client, email_i, name_i,url_i, callback) {
                 if (!result) {
                     result="0";
                 }else {
-                    result="1";
+                    checkUser(email_i, client, function (response) {
+                        result=response;
+                    });
                 }
                 callback(result);
             });
