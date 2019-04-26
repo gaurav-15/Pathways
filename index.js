@@ -434,4 +434,3 @@ function connectDB(callback) {
         return callback(mongoError, mongoClient);
     });
 }
-
