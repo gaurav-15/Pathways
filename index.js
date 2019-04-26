@@ -177,8 +177,8 @@ app.post("/updateuserdetails", function (req, res) {
     let branch_i=req.body.branch.trim();
     let sem_i=req.body.sem.trim();
     let courses_i=req.body.courses.trim();
-    let sg_status_i=req.body.courses.trim();
-    let cw_status_i=req.body.courses.trim();
+    let sg_status_i=req.body.sg_status.trim();
+    let cw_status_i=req.body.cw_status.trim();
     let interest_i=req.body.courses.trim();
     connectDB(function (err, client) {
         if (err) {
