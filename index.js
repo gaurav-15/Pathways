@@ -112,7 +112,7 @@ app.post("/getprereqbyid", function (req, res) {
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.end("Could not connect to database!");
         }
-        getPrereqbyid(client, name, function (response) {
+        getCoursebyid(client, name, function (response) {
             getPrereqDependecies(client, response, function (response) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
@@ -135,7 +135,7 @@ app.post("/getantireqbyid", function (req, res) {
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.end("Could not connect to database!");
         }
-        getAntireqbyid(client, name, function (response) {
+        getCoursebyid(client, name, function (response) {
             getAntireqDependencies(client, response, function (response) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
@@ -145,6 +145,32 @@ app.post("/getantireqbyid", function (req, res) {
         });
     });
 });
+
+
+
+
+app.post("/getoptionsbyid", function (req, res) {
+    let name=req.body.code.toLowerCase().trim();
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        getCoursebyid(client, name, function (response) {
+            getOptionDependencies(client, response, function (response) {
+                client.close();
+                res.header("Access-Control-Allow-Origin", "*");
+                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                res.end(response);
+            });
+        });
+    });
+});
+
+
+
 
 
 async function getPrereqDependecies(client, json_str,callback) {
@@ -163,7 +189,7 @@ async function getPrereqDependecies(client, json_str,callback) {
         result[cid]=[];
         visited.push(cid);
         await new Promise(function (callback) {
-            getPrereqbyid(client, cid,function (response) {
+            getCoursebyid(client, cid,function (response) {
                 json=JSON.parse(response);
                 for (let i=json[0].prerequisites.length-1;i>=0;i--) {
                     if (visited.indexOf(json[0].prerequisites[i])===-1) {
@@ -195,7 +221,40 @@ async function getAntireqDependencies(client, json_str,callback) {
         result[cid]=[];
         visited.push(cid);
         await new Promise(function (callback) {
-            getPrereqbyid(client, cid,function (response) {
+            getCoursebyid(client, cid,function (response) {
+                json=JSON.parse(response);
+                for (let i=json[0].options.length-1;i>=0;i--) {
+                    if (visited.indexOf(json[0].options[i])===-1) {
+                        queue.push(json[0].options[i]);
+                    }
+                }
+                result[cid].push(json[0]);
+                callback();
+            });
+        });
+    }
+    callback(JSON.stringify(result));
+}
+
+
+
+async function getOptionDependencies(client, json_str,callback) {
+    const async = require('async');
+    let json = JSON.parse(json_str);
+    let queue = [];
+    let visited = [];
+    let result={};
+    result[json[0].code]=[];
+    for (let i=json[0].options.length-1;i>=0;i--) {
+        queue.push(json[0].options[i]);
+    }
+    result[json[0].code].push(json[0]);
+    while (queue.length!==0){
+        let cid = queue.pop();
+        result[cid]=[];
+        visited.push(cid);
+        await new Promise(function (callback) {
+            getCoursebyid(client, cid,function (response) {
                 json=JSON.parse(response);
                 for (let i=json[0].options.length-1;i>=0;i--) {
                     if (visited.indexOf(json[0].options[i])===-1) {
@@ -221,15 +280,11 @@ function searchCourses(client, searchKey, callback) {
 
 
 
-function getPrereqbyid(client, searchKey, callback) {
-    client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
-        let response=JSON.stringify(objects);
-        callback(response);
-    });
-}
 
-function getAntireqbyid(client, searchKey, callback) {
-    client.db("Pathways_db").collection('Courses').find({"code":{$regex: new RegExp(searchKey, "i")}}).toArray(function (mongoError, objects) {
+
+
+function getCoursebyid(client, searchKey, callback) {
+    client.db("Pathways_db").collection('Courses').find({"code":searchKey.toUpperCase()}).toArray(function (mongoError, objects) {
         let response=JSON.stringify(objects);
         callback(response);
     });
