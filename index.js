@@ -38,9 +38,9 @@ app.post('/courses', function (req, res) {
 
 
 app.post('/login', function (req, res) {
-    let name_i=req.body.name;
-    let email_i=req.body.email;
-    let url_i=req.body.url;
+    let name_i=req.body.name.trim();
+    let email_i=req.body.email.trim();
+    let url_i=req.body.url.trim();
     connectDB(function (err, client) {
         if (err) {
             console.error(err);
@@ -169,6 +169,45 @@ app.post("/getoptionsbyid", function (req, res) {
     });
 });
 
+
+
+
+app.post("/updateuserdetails", function (req, res) {
+    let email_i=req.body.email.trim();
+    let sem_i=req.body.sem.trim();
+    let courses_i=req.body.courses.trim();
+    let sg_status_i=req.body.courses.trim();
+    let cw_status_i=req.body.courses.trim();
+    let interest_i=req.body.courses.trim();
+    connectDB(function (err, client) {
+        if (err) {
+            console.error(err);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end("Could not connect to database!");
+        }
+        updateUserdata(client,email_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i,function (response) {
+            client.close();
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.end(response);
+        });
+    });
+});
+
+
+
+
+function updateUserdata(client, email_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i, callback) {
+    client.db('Pathways_db').collection('Courses').updateOne({email: email_i}, {$set: {sem: sem_i, courses: courses_i, sg_status: sg_status_i, cw_status: cw_status_i, interest: interest_i}}, function (err, upd) {
+        if (err){
+            console.log(err);
+            throw err;
+        }else {
+            callback("1");
+        }
+    })
+}
 
 
 
@@ -337,7 +376,7 @@ function checkCourse(code_i, client, callback) {
 
 
 
-function login(client, email_i, name_i,url_i, callback) {
+function login(client, email_i, name_i, url_i, callback) {
     checkUser(email_i, client, function (user) {
         if (!user) {
             createUser(email_i, name_i, url_i, client, function (result) {
@@ -366,7 +405,7 @@ function checkUser(email_i, client, callback) {
 }
 
 function  createUser(email_i, name_i, url_i, client, callback) {
-    client.db('Pathways_db').collection('Users').insertOne({email: email_i, name: name_i, url: url_i, sem: 0, courses: [], sg_status: 0, cw_status:0, interests: []}, function (err, result) {
+    client.db('Pathways_db').collection('Users').insertOne({email: email_i, name: name_i, url: url_i, branch: "", sem: 0, courses: [], sg_status: 0, cw_status:0, interests: []}, function (err, result) {
         if (err) {
             console.error(err);
             throw err;
