@@ -174,6 +174,7 @@ app.post("/getoptionsbyid", function (req, res) {
 
 app.post("/updateuserdetails", function (req, res) {
     let email_i=req.body.email.trim();
+    let branch_i=req.body.branch.trim();
     let sem_i=req.body.sem.trim();
     let courses_i=req.body.courses.trim();
     let sg_status_i=req.body.courses.trim();
@@ -186,7 +187,7 @@ app.post("/updateuserdetails", function (req, res) {
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.end("Could not connect to database!");
         }
-        updateUserdata(client,email_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i,function (response) {
+        updateUserdata(client,email_i, branch_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i,function (response) {
             client.close();
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -198,8 +199,8 @@ app.post("/updateuserdetails", function (req, res) {
 
 
 
-function updateUserdata(client, email_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i, callback) {
-    client.db('Pathways_db').collection('Courses').updateOne({email: email_i}, {$set: {sem: sem_i, courses: courses_i, sg_status: sg_status_i, cw_status: cw_status_i, interest: interest_i}}, function (err, upd) {
+function updateUserdata(client, email_i, branch_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i, callback) {
+    client.db('Pathways_db').collection('Courses').updateOne({email: email_i}, {$set: {branch: branch_i, sem: sem_i, courses: courses_i, sg_status: sg_status_i, cw_status: cw_status_i, interest: interest_i}}, function (err, upd) {
         if (err){
             console.log(err);
             throw err;
