@@ -200,10 +200,13 @@ app.post("/updateuserdetails", function (req, res) {
 
 
 function updateUserdata(client, email_i, branch_i, sem_i,courses_i, sg_status_i,cw_status_i,interest_i, callback) {
-    client.db('Pathways_db').collection('Courses').updateOne({email: email_i}, {$set: {branch: branch_i, sem: sem_i, courses: courses_i, sg_status: sg_status_i, cw_status: cw_status_i, interest: interest_i}}, function (err, upd) {
+    client.db('Pathways_db').collection('Users').updateOne({email: email_i}, {$set: {branch: branch_i, sem: sem_i, courses: courses_i, sg_status: sg_status_i, cw_status: cw_status_i, interests: interest_i}}, function (err, upd) {
         if (err){
             console.log(err);
             throw err;
+        }
+        if (!upd){
+            callback("0");
         }
         callback("1");
     })
