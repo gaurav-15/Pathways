@@ -113,12 +113,21 @@ app.post("/getprereqbyid", function (req, res) {
             res.end("Could not connect to database!");
         }
         getCoursebyid(client, name, function (response) {
-            getPrereqDependecies(client, response, function (response) {
+            let json=JSON.parse(response);
+            //console.log(json.length);
+            if (json.length===0) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
                 res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                res.end(response);
-            });
+                res.end("-1");
+            }else {
+                getPrereqDependecies(client, response, function (response) {
+                    client.close();
+                    res.header("Access-Control-Allow-Origin", "*");
+                    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                    res.end(response);
+                });
+            }
         });
     });
 });
@@ -136,12 +145,21 @@ app.post("/getantireqbyid", function (req, res) {
             res.end("Could not connect to database!");
         }
         getCoursebyid(client, name, function (response) {
-            getAntireqDependencies(client, response, function (response) {
+            let json=JSON.parse(response);
+            //console.log(json.length);
+            if (json.length===0) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
                 res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                res.end(response);
-            });
+                res.end("-1");
+            }else {
+                getAntireqDependencies(client, response, function (response) {
+                    client.close();
+                    res.header("Access-Control-Allow-Origin", "*");
+                    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                    res.end(response);
+                });
+            }
         });
     });
 });
@@ -159,12 +177,21 @@ app.post("/getoptionsbyid", function (req, res) {
             res.end("Could not connect to database!");
         }
         getCoursebyid(client, name, function (response) {
-            getOptionDependencies(client, response, function (response) {
+            let json=JSON.parse(response);
+            //console.log(json.length);
+            if (json.length===0) {
                 client.close();
                 res.header("Access-Control-Allow-Origin", "*");
                 res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                res.end(response);
-            });
+                res.end("-1");
+            }else {
+                getOptionDependencies(client, response, function (response) {
+                    client.close();
+                    res.header("Access-Control-Allow-Origin", "*");
+                    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                    res.end(response);
+                });
+            }
         });
     });
 });
