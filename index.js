@@ -458,7 +458,7 @@ function getCourses(client, callback) {
 
 function connectDB(callback) {
     let mongo=require('mongodb').MongoClient;
-    let uri="mongodb+srv://admin:admin@pathways-t30da.mongodb.net/Pathways_db?retryWrites=true";
+    let uri="mongodb+srv://admin:*****@pathways-t30da.mongodb.net/Pathways_db?retryWrites=true";
     mongo.connect(uri, { useNewUrlParser: true }, function (mongoError, mongoClient) {
         return callback(mongoError, mongoClient);
     });
